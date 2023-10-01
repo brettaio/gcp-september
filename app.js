@@ -1,21 +1,14 @@
-var express = require('express');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
-var admin = require('firebase-admin');
+const express = require('express');
+const path = require('path');
+const cookieParser = require('cookie-parser');
+const logger = require('morgan');
+const { initializeApp } = require('firebase-admin/app'); // or 'firebase/app' if you are using the Firebase web SDK
 
-var serviceAccount = require("./gcp-bretta-backend-express-key.json");
+const indexRouter = require('./routes/index');
+const usersRouter = require('./routes/users');
 
-var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
+const app = express();
 
-var app = express();
-
-const dotenv = require('dotenv');
-
-dotenv.config();
-
-//Access Firebase Config Variables
 const firebaseConfig = {
     apiKey: process.env.FIREBASE_API_KEY,
     authDomain: process.env.FIREBASE_AUTH_DOMAIN,
@@ -25,8 +18,9 @@ const firebaseConfig = {
     appId: process.env.FIREBASE_APP_ID,
     measurementId: process.env.FIREBASE_MEASUREMENT_ID,
 };
-const app = initializeApp(firebaseConfig);
 
+// Initialize Firebase
+const firebaseApp = initializeApp(firebaseConfig);
 
 app.use(logger('dev'));
 app.use(express.json());
@@ -36,9 +30,5 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
-
-admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount)
-});
 
 module.exports = app;
